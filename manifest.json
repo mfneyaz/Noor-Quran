@@ -1,0 +1,19 @@
+{
+  "name": "Noor — Quran, Prayer Times & Qibla",
+  "short_name": "Noor Quran",
+  "description": "Indo-Pak Quran (114 Surahs & 30 Parahs), Prayer Times, Makkah Azan, Duas, Hadith, Qibla & Tasbih",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#060b16",
+  "theme_color": "#060b16",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
