@@ -11,6 +11,9 @@
   <meta name="description" content="Noor — Indo-Pak Quran (114 Surahs & 30 Parahs), Prayer Times, Makkah Azan, Authentic Duas, Daily Hadith, Qibla Compass & Digital Tasbih." />
   <title>Noor — Quran, Prayer Times, Duas & Qibla</title>
 
+  <!-- Real PWA Manifest for Full Standalone App Install (No Chrome Badge on GitHub Pages) -->
+  <link id="pwa-manifest-link" rel="manifest" href="./manifest.json" />
+
   <!-- Browser Tab Favicon & Mobile Home Screen App Icons -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='44' fill='%23060b16'/%3E%3Ccircle cx='96' cy='96' r='74' fill='%2310b981' fill-opacity='0.14' stroke='%2334d399' stroke-opacity='0.35' stroke-width='3'/%3E%3Cpath fill='%2334d399' d='M104 42a54 54 0 1 0 54 54c0-2.8-.2-5.5-.6-8.2a32.5 32.5 0 0 1-26.4 13.6 32.5 32.5 0 0 1-18.8-58.8c-2.7-.4-5.4-.6-8.2-.6z'/%3E%3Ccircle cx='126' cy='62' r='6' fill='%23fbbf24'/%3E%3C/svg%3E" />
   <link id="apple-touch-icon-link" rel="apple-touch-icon" sizes="180x180" href="" />
@@ -1171,7 +1174,7 @@
       }
     }
 
-    // Generate crisp high-res PNG app icon for iOS Apple Touch Icon & Android Home Screen
+    // Generate crisp high-res PNG app icon for iOS Apple Touch Icon
     function generateNoorAppIconPNG(size = 512) {
       try {
         const canvas = document.createElement('canvas');
@@ -1180,28 +1183,24 @@
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
 
-        // Deep midnight background
         const bgGrad = ctx.createLinearGradient(0, 0, size, size);
         bgGrad.addColorStop(0, '#071122');
         bgGrad.addColorStop(1, '#040914');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, size, size);
 
-        // Soft emerald radial aura
         const glow = ctx.createRadialGradient(size * 0.5, size * 0.45, size * 0.05, size * 0.5, size * 0.5, size * 0.48);
         glow.addColorStop(0, 'rgba(16, 185, 129, 0.30)');
         glow.addColorStop(1, 'rgba(16, 185, 129, 0)');
         ctx.fillStyle = glow;
         ctx.fillRect(0, 0, size, size);
 
-        // Subtle ornamental ring
         ctx.beginPath();
         ctx.arc(size * 0.5, size * 0.48, size * 0.36, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(52, 211, 153, 0.35)';
         ctx.lineWidth = Math.max(3, size * 0.014);
         ctx.stroke();
 
-        // Crescent Moon (drawn via offscreen composite so inner cutout is clean)
         const moonCanvas = document.createElement('canvas');
         moonCanvas.width = size;
         moonCanvas.height = size;
@@ -1217,7 +1216,6 @@
         mCtx.fill();
         ctx.drawImage(moonCanvas, 0, 0);
 
-        // Golden Star
         const sx = size * 0.63;
         const sy = size * 0.35;
         const sr = size * 0.042;
@@ -1234,7 +1232,6 @@
         ctx.fillStyle = '#fbbf24';
         ctx.fill();
 
-        // Clean "NOOR" wordmark at bottom
         ctx.fillStyle = '#f8fafc';
         ctx.font = `800 ${Math.round(size * 0.11)}px Inter, system-ui, sans-serif`;
         ctx.textAlign = 'center';
@@ -1250,39 +1247,15 @@
     function setupPWA() {
       try {
         const png192 = generateNoorAppIconPNG(192);
-        const png512 = generateNoorAppIconPNG(512);
-        const svgFallback = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='44' fill='%23060b16'/%3E%3Cpath fill='%2334d399' d='M104 42a54 54 0 1 0 54 54c0-2.8-.2-5.5-.6-8.2a32.5 32.5 0 0 1-26.4 13.6 32.5 32.5 0 0 1-18.8-58.8c-2.7-.4-5.4-.6-8.2-.6z'/%3E%3Ccircle cx='126' cy='62' r='6' fill='%23fbbf24'/%3E%3C/svg%3E";
-
-        // Attach real PNG for iOS Safari "Add to Home Screen" icon
         const appleLink = document.getElementById('apple-touch-icon-link');
         if (appleLink && png192) {
           appleLink.href = png192;
         }
 
-        const icons = [];
-        if (png192) icons.push({ src: png192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' });
-        if (png512) icons.push({ src: png512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' });
-        icons.push({ src: svgFallback, sizes: 'any', type: 'image/svg+xml' });
-
-        // Works cleanly on GitHub Pages root or subpath (https://user.github.io/repo/)
-        const baseDir = new URL('./', window.location.href).href;
-        const manifest = {
-          name: 'Noor — Quran, Prayer Times & Qibla',
-          short_name: 'Noor Quran',
-          description: 'Indo-Pak Quran, Prayer Times, Makkah Azan, Duas, Hadith, Qibla & Tasbih',
-          start_url: baseDir,
-          scope: baseDir,
-          display: 'standalone',
-          orientation: 'portrait-primary',
-          background_color: '#060b16',
-          theme_color: '#060b16',
-          icons
-        };
-        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = URL.createObjectURL(blob);
-        document.head.appendChild(link);
+        // Register real Service Worker (sw.js) on HTTPS / GitHub Pages for true standalone WebAPK & 100% Offline launch
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
+        }
       } catch (e) {}
 
       window.addEventListener('beforeinstallprompt', (e) => {
@@ -1789,7 +1762,7 @@
       view.setUint16(34, 8, true); // 8-bit
       writeStr(36, 'data');
       view.setUint32(40, numSamples, true);
-      new Uint8Array(buffer, 44).fill(0x80); // digital silence for unsigned 8-bit PCM
+      new Uint8Array(buffer, 44).fill(0x80);
       silentKeepAliveUrl = URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
       return silentKeepAliveUrl;
     }
@@ -1942,15 +1915,12 @@
       applyAutoAzanUI();
 
       if (state.autoAzan) {
-        // Start silent keep-alive on the persistent <audio> element directly inside this user tap!
         startAzanKeepAlive();
 
-        // Request lock-screen browser notification permission
         if ('Notification' in window && Notification.permission === 'default') {
           try { await Notification.requestPermission(); } catch (e) {}
         }
 
-        // Preload cached Azan MP3 URL into memory so zero async delay at Azan time
         await preloadCachedAzanUrl();
         await acquireWakeLock();
         applyAutoAzanUI();
@@ -2057,7 +2027,6 @@
       setAzanMediaSession(title);
       updateAzanBanner(title, 'Starting Makkah Azan...', false);
 
-      // Build ordered list of sources: preloaded offline Blob URL first (zero async delay!), then online streams
       const sources = [];
       if (azanCachedUrl) sources.push(azanCachedUrl);
       AZAN_SOURCES.forEach(s => sources.push(s));
@@ -2086,7 +2055,6 @@
           playPromise.then(() => {
             if (!isAzanRinging) return;
             updateAzanBanner(title, 'Playing full volume', false);
-            // Auto-cache offline in background if we streamed online
             if (!azanCachedUrl && navigator.onLine) {
               fetchAndCacheAudioBlob(AZAN_SOURCES, 'azan_makkah_audio')
                 .then(() => checkOfflineAzanStatus())
@@ -2095,7 +2063,6 @@
           }).catch((err) => {
             if (!isAzanRinging) return;
             if (err && err.name === 'NotAllowedError') {
-              // Mobile OS blocked audio while locked — tell the user honestly & offer 1-tap Play
               updateAzanBanner(title, 'Phone blocked audio while locked — Tap Play', true);
             } else {
               trySource();
@@ -2118,7 +2085,6 @@
       const banner = document.getElementById('azan-banner');
       if (banner) banner.classList.add('hidden');
 
-      // Re-arm silent keep-alive loop if Auto-Azan is still ON so the next prayer also rings
       if (state.autoAzan) {
         startAzanKeepAlive();
       } else {
@@ -2126,7 +2092,6 @@
       }
     }
 
-    // Re-acquire wake lock, re-arm keep-alive, & check prayer times when user unlocks/returns to tab
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         if (state.autoAzan) {
@@ -2409,7 +2374,6 @@
       const cacheKey = `parah_${parahNum}_${state.translation}`;
       let ayahs = await idbGet(cacheKey);
 
-      // Build Parah 100% offline from Full Quran storage if available
       if (!ayahs) {
         const fullAr = await idbGet('full_quran_arabic');
         if (fullAr && fullAr.length === 114) {
@@ -2567,7 +2531,6 @@
       const prev = idx > 0 ? list[idx - 1] : null;
       const next = idx < list.length - 1 ? list[idx + 1] : null;
 
-      // 1. Quarter Markers: Ruba (1/4), Nisf (1/2), Shalasah (3/4) in Indo-Pak OR Rub el Hizb in Uthmani
       if (state.markerStyle === 'indopak') {
         const ayahKey = `${a.surahNumber}:${a.numberInSurah}`;
         if (INDOPAK_QUARTER_MAP[ayahKey]) {
@@ -2585,7 +2548,6 @@
         startMarkers.push({ ...hizbLabels[posInHizb], cls: 'bg-purple-500/20 border-purple-400/45 text-purple-200', isQuarter: true });
       }
 
-      // 2. Sajda Tilawah Marker (15 standard positions + API flag)
       const isSajda = Boolean(a.sajda) || SAJDA_AYAHS.has(`${a.surahNumber}:${a.numberInSurah}`);
       if (isSajda) {
         endMarkers.push({
@@ -2595,7 +2557,6 @@
         });
       }
 
-      // 3. Ruku Marker with Accurate Indo-Pak Per-Surah & Parah Numbering (at the END of a Ruku)
       const isRukuEnd = a.ruku && (
         (next && next.ruku && next.ruku !== a.ruku) ||
         (!next && state.quranMode === 'surah') ||
@@ -2953,7 +2914,6 @@
     async function playAudioWithFallback(urls, token, onSuccessEnd, onAllFail, cacheKey) {
       if (token !== audioPlayToken) return;
 
-      // 1. Check Offline IndexedDB Cache FIRST (100% Offline Playback)
       if (cacheKey) {
         const cachedBlob = await idbGet(cacheKey);
         if (token !== audioPlayToken) return;
@@ -2981,7 +2941,6 @@
         }
       }
 
-      // 2. Fallback to Online Stream + Background Auto-Cache for Offline Replay
       function streamFromNetwork() {
         let urlIdx = 0;
         const tryNext = () => {
@@ -3129,7 +3088,6 @@
       if (lbl) lbl.textContent = state.quranMode === 'parah' ? 'Play Parah' : 'Play Full Surah';
     }
 
-    // Check & Download Current Surah / Parah Audio Offline
     function getRequiredAudioItemsForCurrentSection() {
       const items = [];
       const mode = state.audioMode || 'ar';
@@ -3237,7 +3195,6 @@
       await checkCurrentSectionAudioStatus();
     }
 
-    // 1-Tap Full Quran Text Offline Storage (114 Surahs + 30 Parahs)
     async function checkOfflineQuranStatus() {
       const dot = document.getElementById('offline-db-dot');
       const status = document.getElementById('offline-db-status');
@@ -3472,4 +3429,4 @@
     };
   </script>
 </body>
-</htm
+</html>
